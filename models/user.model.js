@@ -26,7 +26,7 @@ const userSchema = new Schema(
             type:String ,
             required:true,
             max:50,
-            minLength:8,
+            minlength:8,
 
         },
         picture:{

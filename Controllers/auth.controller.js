@@ -1,5 +1,6 @@
 const UserModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
+const { signUpError, loginError } = require("../utils/errors.utils");
 
 
 
@@ -14,14 +15,15 @@ const createToken = (id) => {
 // singUp
 
 module.exports.signUp = async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const { pseudo, Email, Password } = req.body;
 
   try {
     const user = await UserModel.create({ pseudo, Email, Password });
     res.status(201).json({ user: user._id });
   } catch (err) {
-    res.status(200).send({ err });
+    const errors =signUpError(err)
+    res.status(200).send({errors});
   }
 };
 
@@ -35,7 +37,8 @@ module.exports.signIn = async (req, res) => {
     res.status(200).json({ user: user._id });
 
   } catch (err) {
-    res.status(200).send({err:"failed to login"});
+    const errors = loginError(err);
+    res.status(200).send({errors});
   }
 };
 
