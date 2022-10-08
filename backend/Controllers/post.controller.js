@@ -10,7 +10,7 @@ const ObjectId = require("mongoose").Types.ObjectId;
 
 module.exports.readPosts = async (req, res) => {
   const posts = await PostModel.find().sort({ createdAt: -1 });
-  res.status(200).json({ posts });
+  res.status(200).json( posts);
 };
 
 
@@ -18,15 +18,18 @@ module.exports.readPosts = async (req, res) => {
  // Create ea new post
 module.exports.createPost = async (req, res) => {
   const newPost = new PostModel({
-    posterId: req.body.posterId,
+    // posterId: req.body.posterId,
     message: req.body.message,
+    picture:req.body.picture,
+    location:req.body.location,
+    name:req.body.name,
     video: req.body.video,
     likes: [],
     comments: [],
   });
   try {
     const post = await newPost.save();
-    res.status(200).json({ message: "post created", post });
+    res.status(200).json({ message: "post created", post  });
   } catch (error) {
     res.status(400).json({ message: "failed to created new post ", error });
   }
@@ -44,7 +47,12 @@ module.exports.updatePost = async (req, res) => {
       { _id: req.params.id },
       {
         $set: {
-          message: req.body.message,
+            // message: req.body.message,
+            picture: req.body.picture,  
+        },
+        $set: {
+            message: req.body.message,
+            // picture: req.body.picture,  
         },
       },
       { new: true, upsert: true, setDefaultsOnInsert: true }
@@ -84,7 +92,7 @@ module.exports.likePost = async (req, res) => {
         const likePost = await PostModel.findByIdAndUpdate(
         { _id: req.params.id },
         {
-            $addToSet: {
+        $addToSet: {
             likes: req.body.id,
             },
         },

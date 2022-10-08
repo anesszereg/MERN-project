@@ -3,17 +3,39 @@ const mongoose =require('mongoose')
 const PostSchema =new mongoose.Schema(
 
     {
-        posterId :{
+
+        // posterId :{
+        //     type:String,
+        //     required:true
+        // },
+        name:{
             type:String,
             required:true
+
         },
         message:{
             type:String,
             trim:true,
             maxlength:2000,
         },
+        location:{
+            type:[String],
+            required:true
+        },
         picture:{
-            type:String,
+            type:[
+                {
+                    image1:String,
+                },{
+
+                    image2:String,
+                },{
+
+                    image3:String
+                }
+            ]
+            ,
+            required:true,
         },
         video:{
             type:String,

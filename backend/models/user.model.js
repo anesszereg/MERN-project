@@ -46,6 +46,14 @@ const userSchema = new Schema(
         likes:{
             type:[String],
         } , 
+        isAdmine:{
+            type: Boolean,
+            default: false,
+        },
+        isAgency:{
+            type:Boolean,
+            default:false
+        }
 
 
 

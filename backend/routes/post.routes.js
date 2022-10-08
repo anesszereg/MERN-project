@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const postController = require('../controllers/post.controller')
-const { route } = require('./user.routes')
+// const { route } = require('./user.routes')
 
 
 router.get('/',postController.readPosts)
@@ -13,7 +13,7 @@ router.delete('/:id',postController.deletePost)
 
 // likes a post 
 
-router.patch('/like/:id',postController.likePost)
+router.put('/like/:id',postController.likePost)
 
 // unlike a post
 

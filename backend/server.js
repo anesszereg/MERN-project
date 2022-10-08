@@ -8,10 +8,12 @@ require("./Config/db");
 const {checkUser} =require('./Middleware/auth.middleware')
 const { requireAuth } = require("./Middleware/auth.middleware");
 const app = express();
+const cors = require("cors")
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(cors())
 
 //jwt 
 
