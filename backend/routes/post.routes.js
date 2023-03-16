@@ -11,26 +11,33 @@ router.put('/:id',postController.updatePost)
 
 router.delete('/:id',postController.deletePost)
 
+router.get('/PostDetails/:id',postController.getPostInfo)
+
+router.get('/PostOfUser/:id',postController.postUser)
+
+
+router.put ('/userPost/:id',postController.userPosts)
+
 // likes a post 
 
 router.put('/like/:id',postController.likePost)
 
 // unlike a post
 
-router.patch('/unlike/:id',postController.unLikePost)
+router.put('/unlike/:id',postController.unLikePost)
 
 // add id to user likes array
 
-router.patch('/userLikes/:id',postController.userLikes)
+router.put('/userLikes/:id',postController.userLikes)
 
 // pull id from user likes array
 
-router.patch('/userUnLikes/:id',postController.userUnLikes)
+router.put('/userUnLikes/:id',postController.userUnLikes)
 
 
 // add comment to post
 
-router.patch('/AddComment/:id',postController.addComment)
+router.put('/AddComment/:id',postController.addComment)
 
 // delete comment from post
 

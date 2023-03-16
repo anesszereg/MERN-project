@@ -5,8 +5,8 @@ const ObjectId = require("mongoose").Types.ObjectId;
 //get all users
 
 module.exports.getAllUsers = async (req, res) => {
-  const users = await UserModel.find().select("-Password");
-  res.status(200).json({ users });
+  const users = await UserModel.find().select("-Password").populate("following");
+  res.status(200).json( users );
 };
 
 //get user by id
@@ -18,7 +18,7 @@ module.exports.userInfo = async (req, res) => {
   UserModel.findById(req.params.id, (err, docs) => {
     if (!err) res.send(docs);
     else console.log("ID unknown:" + err);
-  }).select("-password");
+  }).select("-password").populate('likes').populate("following").populate('Posts');
 };
 
 // update user by id
@@ -33,6 +33,18 @@ module.exports.updateUser = async (req, res) => {
       {
         $set: {
           bio: req.body.bio,
+        },
+        $set: {
+          likes: req.body.likes,
+        },
+        // $set: {
+        //   Posts: req.body.Posts,
+        // },
+        $set: {
+          Email: req.body.Email,
+        },
+        $set: {
+          pseudo: req.body.pseudo,
         },
       },
       { new: true, upsert: true, setDefaultsOnInsert: true }
@@ -97,8 +109,8 @@ module.exports.AddToFollowerList = async (req, res) => {
 
   try {
     const followerslist = await UserModel.findByIdAndUpdate(
-      req.body.idToFollow,
-      { $addToSet: { followers: req.params.id } },
+      req.params.idToFollow,
+      { $addToSet: { followers: req.body.id } },
       { new: true, upsert: true }
     );
     res.status(200).json({

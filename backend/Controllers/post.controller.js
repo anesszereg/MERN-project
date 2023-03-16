@@ -9,7 +9,7 @@ const ObjectId = require("mongoose").Types.ObjectId;
 // gat all posts of a user
 
 module.exports.readPosts = async (req, res) => {
-  const posts = await PostModel.find().sort({ createdAt: -1 });
+  const posts = await PostModel.find().sort({ createdAt: -1 }).populate("posterId");
   res.status(200).json( posts);
 };
 
@@ -18,22 +18,76 @@ module.exports.readPosts = async (req, res) => {
  // Create ea new post
 module.exports.createPost = async (req, res) => {
   const newPost = new PostModel({
-    // posterId: req.body.posterId,
+    posterId: req.body.posterId,
     message: req.body.message,
     picture:req.body.picture,
     location:req.body.location,
     name:req.body.name,
     video: req.body.video,
+    Category: req.body.Category,
+    // rating:req.body.rating
     likes: [],
     comments: [],
-  });
+});
   try {
     const post = await newPost.save();
+    UserModel.findOne({ _id: req.params.id } ).populate("posterId") 
     res.status(200).json({ message: "post created", post  });
   } catch (error) {
     res.status(400).json({ message: "failed to created new post ", error });
   }
 };
+
+//get all post of one user 
+
+module.exports.postUser =async (req,res)=>{
+    if (!ObjectId.isValid(req.params.id)) {
+        return res.status(400).send({ message: "invalid id" });
+    }
+    try{
+        const userPosts =await PostModel.find({posterId:req.params.posterId}).populate("posterId")
+        res.status(200).json({message:"all posts of this user", userPosts})
+    }catch(err){
+        res.status(400).json({message:'failed to get posts of this user'})
+
+    }
+}
+
+
+//add to user posts
+
+module.exports.userPosts = async (req, res) => {
+    if (!ObjectId.isValid(req.params.id)) {
+        return res.status(400).send({ message: "invalid id" });
+    }
+
+    try {
+        const userLikes = await UserModel.findByIdAndUpdate(
+        { _id: req.parmas.id }).populate("Posts") 
+        // {   
+        //     $addToSet: {
+        //     Posts: req.body.Posts,
+        //     },
+        // },
+        // { new: true, upsert: true, setDefaultsOnInsert: true }
+        
+        res.status(200).json({ message: "add id post seccessfully", userLikes });
+    } catch (error) {
+        res.status(400).json({ message: "failed to add id post to  user ", error });
+    }
+}
+
+// get post info  by id 
+
+module.exports.getPostInfo = async(req,res)=>{
+    if (!ObjectId.isValid(req.params.id))
+    return res.status(400).send("ID unknown:" + req.params.id);
+
+    PostModel.findById(req.params.id, (err, docs) => {
+    if (!err) res.send(docs);
+    else console.log("ID unknown:" + err);
+  }).populate('posterId');
+}
 
 // update post by id
 
@@ -47,13 +101,20 @@ module.exports.updatePost = async (req, res) => {
       { _id: req.params.id },
       {
         $set: {
-            // message: req.body.message,
             picture: req.body.picture,  
         },
         $set: {
             message: req.body.message,
+        },
+        $set: {
+            name: req.body.name,
             // picture: req.body.picture,  
         },
+        $set: {
+           rating:req.body.rating
+            // picture: req.body.picture,  
+        },
+
       },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
@@ -93,7 +154,7 @@ module.exports.likePost = async (req, res) => {
         { _id: req.params.id },
         {
         $addToSet: {
-            likes: req.body.id,
+            likes: req.body.id, 
             },
         },
         { new: true, upsert: true, setDefaultsOnInsert: true }
@@ -115,14 +176,14 @@ module.exports.userLikes = async (req, res) => {
 
     try {
         const userLikes = await UserModel.findByIdAndUpdate(
-        { _id: req.body.id },
+        { _id: req.params.id },
         {   
             $addToSet: {
-            likes: req.params.id,
-            },
+            likes: req.body.id
+            }
         },
         { new: true, upsert: true, setDefaultsOnInsert: true }
-        );
+        ).populate("likes");
         res.status(200).json({ message: "user liked", userLikes });
     } catch (error) {
         res.status(400).json({ message: "failed to like user ", error });
@@ -143,7 +204,7 @@ module.exports.unLikePost = async (req, res) => {
             {_id: req.params.id},
             {
                 $pull: {
-                    likes: req.body.id,
+                    likes: req.body.likes,
                 },
             },
             {new: true, upsert: true, setDefaultsOnInsert: true}
@@ -167,10 +228,10 @@ module.exports.userUnLikes = async (req, res) => {
 
     try{
         const userUnLikes = await UserModel.findByIdAndUpdate(
-            {_id: req.body.id},
+            {_id: req.params.id},
             {
                 $pull: {
-                    likes: req.params.id,
+                    likes: req.body.likes,
                 },
             },
             {new: true, upsert: true, setDefaultsOnInsert: true}
@@ -193,11 +254,12 @@ module.exports.addComment = async (req, res) => {
     }
 
     try{
-        const addComment = await PostModel.findByIdAndUpdate(
+        const addComment = await UserModel.findByIdAndUpdate(
             {_id: req.params.id},
             {
-                $push: {
+                $addToSet: {
                     comments: {
+                        commenterImage: req.body.commenterImage,
                         commenterPseudo: req.body.commenterPseudo,
                         commenterId: req.body.commenterId,
                         text: req.body.text,
@@ -225,7 +287,7 @@ module.exports.deleteComment = async (req, res) => {
     }
 
     try{
-        const deleteComment = await PostModel.findByIdAndUpdate(
+        const deleteComment = await UserModel.findByIdAndUpdate(
             {_id: req.params.id},
             {
                 $pull: {
@@ -259,11 +321,12 @@ module.exports.updateComment = async (req, res) => {
     }
 
     try{
-        const updateComment = await PostModel.findByIdAndDelete(
+        const updateComment = await UserModel.findByIdAndDelete(
             {_id: req.params.id},
             {
                 $pull: {
                     comments: {
+                        commenterImage: req.body.commenterImage,
                         commenterPseudo: req.body.commenterPseudo,
                         commenterId: req.body.commenterId,
                         text: req.body.text,
@@ -293,7 +356,7 @@ module.exports.deleteAllComments = async (req, res) => {
     }
 
     try{
-        const deleteAllComments = await PostModel.findByIdAndUpdate(
+        const deleteAllComments = await UserModel.findByIdAndUpdate(
             {_id: req.params.id},
             {
                 $set: {

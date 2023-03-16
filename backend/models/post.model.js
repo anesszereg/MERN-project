@@ -4,10 +4,12 @@ const PostSchema =new mongoose.Schema(
 
     {
 
-        // posterId :{
-        //     type:String,
-        //     required:true
-        // },
+        posterId :
+            [{ 
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+             }]
+        ,
         name:{
             type:String,
             required:true
@@ -19,21 +21,11 @@ const PostSchema =new mongoose.Schema(
             maxlength:2000,
         },
         location:{
-            type:[String],
+            type:String,
             required:true
         },
         picture:{
-            type:[
-                {
-                    image1:String,
-                },{
-
-                    image2:String,
-                },{
-
-                    image3:String
-                }
-            ]
+            type:[String]
             ,
             required:true,
         },
@@ -55,6 +47,12 @@ const PostSchema =new mongoose.Schema(
             ],
             required:true,
         },
+        rating:{
+            type:String
+        },
+        Category:{
+            type:String
+        }
 
     },
     {

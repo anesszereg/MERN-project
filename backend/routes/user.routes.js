@@ -30,7 +30,7 @@ router.delete("/:id", userController.deleteUser);
 // follow user by id
 router.put("/follow/:id", userController.followUser);
 //unFollow user by id
-router.patch("/unFollow/:id", userController.unFollowUser);
+router.put("/unFollow/:id", userController.unFollowUser);
 
 // add user to the followers list by id
 
